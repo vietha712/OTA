@@ -11,6 +11,7 @@ class Program
 {
     static void Main(string[] args)
     {
+#if a
         int tableRows = 10;
         int tableCols = 4;
         string Author = "MST2020";
@@ -48,8 +49,24 @@ class Program
         //}
 
         excelTable.exportFile();
+#endif
+        /* Test for importing data */
 
+        string path = "D:\\Workspace\\WindowApp\\ConsoleApp1\\Template.xlsx";
+        var importTable = new ExcelTableForPLCData(path);
+        importTable.readXLS(0); // 0 is sheet index
+
+        for (int i = 0; i < 10; i++)
+        {
+            Console.Write( "Serial No. " + importTable.importData.serialNo[i].ToString() + "\n");
+            Console.Write("Name. " + importTable.importData.name[i] + "\n");
+            Console.Write("Value. " + importTable.importData.value[i].ToString() + "\n");
+            Console.Write("Address " + importTable.importData.address[i] + "\n");
+            Console.Write("Time stamp " + importTable.importData.timeStamp[i] + "\n");
+            Console.Write("\n");
+        }
     }
+
 }
 
 public class ExcelTableForPLCData
@@ -72,6 +89,16 @@ public class ExcelTableForPLCData
     private int serialNumber = 1; //init value
     private int maxRows = 3; // less than this value, more row can be appended
     private ExcelPackage excelFile;
+    public templateForImport importData;
+
+    public struct templateForImport
+    {
+        public int[] serialNo;
+        public string[] name;
+        public double[] value;
+        public int[] address;
+        public string[] timeStamp;
+    }
 
     public ExcelTableForPLCData()
     {
@@ -88,6 +115,14 @@ public class ExcelTableForPLCData
         currentFloatingPointDataRow = 1;
         currentIntDataRow = 1;
         excelFile = new ExcelPackage();
+    }
+
+    public ExcelTableForPLCData(string filePath)
+    {
+        FileInfo fileInfo = new FileInfo(filePath);
+        excelFile = new ExcelPackage(fileInfo);
+
+        excelFile.Save();
     }
 
     public void createExcelFile(string Author, string Title, string sheetName)
@@ -179,6 +214,29 @@ public class ExcelTableForPLCData
         maxRows = serialNumber + 1;
 
         excelFile.Save();
+    }
+
+    public void readXLS(int sheetIdx)
+    {
+        //get the first worksheet in the workbook
+        ExcelWorksheet worksheet = excelFile.Workbook.Worksheets[sheetIdx];
+        int colCount = worksheet.Dimension.End.Column;  //get Column Count
+        int rowCount = worksheet.Dimension.End.Row;     //get row count
+        importData = new templateForImport();
+        importData.serialNo = new int[rowCount];
+        importData.name = new string[rowCount];
+        importData.value = new double[rowCount];
+        importData.address = new int[rowCount];
+        importData.timeStamp = new string[rowCount];
+
+        for(int i = 2; i <= rowCount; i++)
+        {
+            importData.serialNo[i - 2] = Int32.Parse(worksheet.Cells[i, 1].Value.ToString().Trim());
+            importData.name[i - 2] = worksheet.Cells[i, 2].Value.ToString().Trim();
+            importData.value[i - 2] = Double.Parse(worksheet.Cells[i, 3].Value.ToString().Trim());
+            importData.address[i - 2] = Int32.Parse(worksheet.Cells[i, 4].Value.ToString().Trim());
+            importData.timeStamp[i - 2] = worksheet.Cells[i, 5].Value.ToString().Trim();
+        }
     }
 }
 
