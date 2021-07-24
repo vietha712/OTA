@@ -26,7 +26,7 @@
 ".\objects\stm32f4xx_hal_usart.o"
 ".\objects\startup_stm32f407xx.o"
 ".\objects\system_stm32f4xx.o"
---strict --scatter "D:\00_MasterMST\00_Modules\EmbeddedSystem\ota\boot\olimex_stm32p405.sct"
+--strict --scatter ".\Objects\FreeRTOS_Basic_Setup.sct"
 --summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
 --info sizes --info totals --info unused --info veneers
 --list ".\Listings\FreeRTOS_Basic_Setup.map" -o .\Objects\FreeRTOS_Basic_Setup.axf
