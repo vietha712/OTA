@@ -57,7 +57,7 @@ int main( void )
 					NULL );		/* We are not using the task handle. */
 	
 	/* Create the other task in exactly the same way. */
-	xTaskCreate( vTaskCommunication, "Communication task", 100, NULL, 1, NULL );
+	xTaskCreate( vTaskCommunication, "Communication task", 100, NULL, 2, NULL );
 	
 	xTaskCreate( vExternalInterruptTask, "button triggered task", 100, NULL, 1, &buttonHandle );
 	
@@ -105,8 +105,7 @@ void vTaskCommunication( void *pvParameters )
 	for( ;; )
 	{
 		/* Print out the name of this task. */
-    printf("%s\n",pcTaskName);
-		//vTaskDelay(1000 / portTICK_PERIOD_MS);
+    BootComCheckActivationRequest();
 
 	}
 }
