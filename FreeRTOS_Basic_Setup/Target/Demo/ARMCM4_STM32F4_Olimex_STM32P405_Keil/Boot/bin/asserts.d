@@ -1,0 +1,17 @@
+..\bin\asserts.o: ..\..\..\..\Source\asserts.c
+..\bin\asserts.o: ..\..\..\..\Source\boot.h
+..\bin\asserts.o: ..\..\..\..\Source\ARMCM4_STM32F4\types.h
+..\bin\asserts.o: ..\..\..\..\Source\asserts.h
+..\bin\asserts.o: ..\..\Boot\blt_conf.h
+..\bin\asserts.o: ..\..\..\..\Source\plausibility.h
+..\bin\asserts.o: ..\..\..\..\Source\cpu.h
+..\bin\asserts.o: ..\..\..\..\Source\cop.h
+..\bin\asserts.o: ..\..\..\..\Source\nvm.h
+..\bin\asserts.o: ..\..\..\..\Source\timer.h
+..\bin\asserts.o: ..\..\..\..\Source\backdoor.h
+..\bin\asserts.o: ..\..\..\..\Source\file.h
+..\bin\asserts.o: ..\..\..\..\Source\third_party\fatfs\src\ff.h
+..\bin\asserts.o: ..\..\..\..\Source\third_party\fatfs\src\integer.h
+..\bin\asserts.o: ..\lib\fatfs\ffconf.h
+..\bin\asserts.o: ..\..\..\..\Source\com.h
+..\bin\asserts.o: ..\..\..\..\Source\xcp.h

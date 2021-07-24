@@ -34,6 +34,7 @@
 void BootComInit(void);
 void BootComCheckActivationRequest(void);
 void BootActivate(void);
+unsigned long TimerGet(void);
 
 
 #endif /* BOOT_H */

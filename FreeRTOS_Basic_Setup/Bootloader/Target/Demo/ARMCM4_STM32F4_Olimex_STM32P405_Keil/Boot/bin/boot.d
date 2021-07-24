@@ -1,0 +1,17 @@
+..\bin\boot.o: ..\..\..\..\Source\boot.c
+..\bin\boot.o: ..\..\..\..\Source\boot.h
+..\bin\boot.o: ..\..\..\..\Source\ARMCM4_STM32F4\types.h
+..\bin\boot.o: ..\..\..\..\Source\asserts.h
+..\bin\boot.o: ..\..\Boot\blt_conf.h
+..\bin\boot.o: ..\..\..\..\Source\plausibility.h
+..\bin\boot.o: ..\..\..\..\Source\cpu.h
+..\bin\boot.o: ..\..\..\..\Source\cop.h
+..\bin\boot.o: ..\..\..\..\Source\nvm.h
+..\bin\boot.o: ..\..\..\..\Source\timer.h
+..\bin\boot.o: ..\..\..\..\Source\backdoor.h
+..\bin\boot.o: ..\..\..\..\Source\file.h
+..\bin\boot.o: ..\..\..\..\Source\third_party\fatfs\src\ff.h
+..\bin\boot.o: ..\..\..\..\Source\third_party\fatfs\src\integer.h
+..\bin\boot.o: ..\lib\fatfs\ffconf.h
+..\bin\boot.o: ..\..\..\..\Source\com.h
+..\bin\boot.o: ..\..\..\..\Source\xcp.h

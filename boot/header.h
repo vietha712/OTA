@@ -31,11 +31,11 @@
 /****************************************************************************************
 * Include files
 ****************************************************************************************/
-#include "../Boot/blt_conf.h"                          /* bootloader configuration     */
+#include "blt_conf.h"                          /* bootloader configuration     */
 #include "stm32f4xx.h"                                 /* STM32 registers              */
+#include "stm32f4xx_hal.h"
 #include "boot.h"                                      /* bootloader interface driver  */
-#include "led.h"                                       /* LED driver                   */
-#include "timer.h"                                     /* Timer driver                 */
+//#include "timer.h"                                     /* Timer driver                 */
 
 
 #endif /* HEADER_H */

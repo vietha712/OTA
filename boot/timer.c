@@ -48,16 +48,7 @@ void TimerInit(void)
 } /*** end of TimerInit ***/
 
 
-/************************************************************************************//**
-** \brief     Obtains the counter value of the millisecond timer.
-** \return    Current value of the millisecond timer.
-**
-****************************************************************************************/
-unsigned long TimerGet(void)
-{
-  /* Read and return the tick counter value. */
-  return HAL_GetTick();
-} /*** end of TimerGet ***/
+
 
 
 /************************************************************************************//**

@@ -39,10 +39,6 @@
 static void BootComRs232Init(void);
 static void BootComRs232CheckActivationRequest(void);
 #endif
-#if (BOOT_COM_CAN_ENABLE > 0)
-static void BootComCanInit(void);
-static void BootComCanCheckActivationRequest(void);
-#endif
 
 /************************************************************************************//**
 ** \brief     Initializes the communication interface.
@@ -53,9 +49,6 @@ void BootComInit(void)
 {
 #if (BOOT_COM_RS232_ENABLE > 0)
   BootComRs232Init();
-#endif
-#if (BOOT_COM_CAN_ENABLE > 0)
-  BootComCanInit();
 #endif
 } /*** end of BootComInit ***/
 
@@ -70,9 +63,6 @@ void BootComCheckActivationRequest(void)
 {
 #if (BOOT_COM_RS232_ENABLE > 0)
   BootComRs232CheckActivationRequest();
-#endif
-#if (BOOT_COM_CAN_ENABLE > 0)
-  BootComCanCheckActivationRequest();
 #endif
 } /*** end of BootComCheckActivationRequest ***/
 
@@ -136,7 +126,16 @@ static void BootComRs232Init(void)
   HAL_UART_Init(&rs232Handle);
 } /*** end of BootComRs232Init ***/
 
-
+/************************************************************************************//**
+** \brief     Obtains the counter value of the millisecond timer.
+** \return    Current value of the millisecond timer.
+**
+****************************************************************************************/
+unsigned long TimerGet(void)
+{
+  /* Read and return the tick counter value. */
+  return HAL_GetTick();
+} /*** end of TimerGet ***/
 /************************************************************************************//**
 ** \brief     Receives the CONNECT request from the host, which indicates that the
 **            bootloader should be activated and, if so, activates it.
