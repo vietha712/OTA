@@ -31,7 +31,6 @@ UART_HandleTypeDef huart3;
 TaskHandle_t timerHandle = NULL;
 TaskHandle_t buttonHandle = NULL;
 
-
 /*-----------------------------------------------------------*/
 
 int main( void )
@@ -47,23 +46,16 @@ int main( void )
 	BootComInit();
 
 	printf("FreeRTOS running on STM32F407 Discovery Board\n");
-
-	/* Create one of the two tasks. */
-	xTaskCreate(	vTaskLedBlinking,		/* Pointer to the function that implements the task. */
-					"LED blinking",	/* Text name for the task.  This is to facilitate debugging only. */
-					100,		/* Stack depth in words. */
-					NULL,		/* We are not using the task parameter. */
-					2,			/* This task will run at priority 1. */
-					NULL );		/* We are not using the task handle. */
 	
 	/* Create the other task in exactly the same way. */
-	xTaskCreate( vTaskCommunication, "Communication task", 100, NULL, 2, NULL );
+	xTaskCreate( vTaskCommunication, "Communication task", 100, NULL, 1, NULL );
 	
-	xTaskCreate( vExternalInterruptTask, "button triggered task", 100, NULL, 1, &buttonHandle );
+	xTaskCreate( vExternalInterruptTask, "button triggered task", 100, NULL, 2, &buttonHandle );
 	
-	xTaskCreate( vTimerInterruptTask, "timerHandle task", 100, NULL, 1, &timerHandle );
+	xTaskCreate( vTimerInterruptTask, "timerHandle task for LED blinking", 100, NULL, 2, &timerHandle );
 	
 	HAL_TIM_Base_Start_IT_modified(&htim2);
+	
 	/* Start the scheduler so our tasks start executing. */
 	vTaskStartScheduler();
 
@@ -74,38 +66,15 @@ int main( void )
 }
 /*-----------------------------------------------------------*/
 
-void vTaskLedBlinking( void *pvParameters )
-{
-	
-	TickType_t xLastWakeTime;
-	const TickType_t xDelay1s = pdMS_TO_TICKS( 1000 );
-	xLastWakeTime = xTaskGetTickCount();
-
-	/* As per most tasks, this task is implemented in an infinite loop. */
-	for( ;; )
-	{
-		printf("Blinking!!! \n");
-		//HAL_GPIO_TogglePin(GPIOD,GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_14 |GPIO_PIN_15);
-
-		vTaskDelayUntil( &xLastWakeTime, xDelay1s );
-	}
-	
-	vTaskDelete(NULL);
-	
-} 
-/*-----------------------------------------------------------*/
-
 /* UART communication */
 void vTaskCommunication( void *pvParameters )
 {
-	const char *pcTaskName = "Task communication is running\n";
-	volatile unsigned long ul;
-
 	/* As per most tasks, this task is implemented in an infinite loop. */
 	for( ;; )
 	{
 		/* Print out the name of this task. */
     BootComCheckActivationRequest();
+		printf("Check request from esp32\n");
 
 	}
 }
@@ -115,10 +84,9 @@ void vTaskCommunication( void *pvParameters )
 void EXTI0_IRQHandler(void)
 {
 	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_0);
-	
 	BaseType_t checkIfYieldRequried;
-	checkIfYieldRequried = xTaskResumeFromISR(buttonHandle);
-	portYIELD_FROM_ISR(checkIfYieldRequried);
+	
+	vTaskNotifyGiveFromISR(buttonHandle, &checkIfYieldRequried);
 }
 /*-----------------------------------------------------------*/
 
@@ -126,10 +94,9 @@ void EXTI0_IRQHandler(void)
 void TIM2_IRQHandler(void)
 {
 	HAL_TIM_IRQHandler(&htim2);
-	
 	BaseType_t checkIfYieldRequried;
-	checkIfYieldRequried = xTaskResumeFromISR(timerHandle);
-	portYIELD_FROM_ISR(checkIfYieldRequried);
+	
+	vTaskNotifyGiveFromISR(timerHandle, &checkIfYieldRequried);
 }
 /*-----------------------------------------------------------*/
 
@@ -137,20 +104,24 @@ void vTimerInterruptTask(void *p)
 {
 	while(1)
 	{
-		vTaskSuspend(NULL);
-		HAL_GPIO_TogglePin(GPIOD, (GPIO_PIN_12|GPIO_PIN_13));
-		printf("Timer Interrupt\r\n");
+		if (ulTaskNotifyTake(pdTRUE, portMAX_DELAY))
+		{
+			HAL_GPIO_TogglePin(GPIOD, (GPIO_PIN_12|GPIO_PIN_13));
+			printf("Timer Interrupt\r\n");
+		}
 	}
 }
 /*-----------------------------------------------------------*/
-
+/* Task notification is used as a lightweight binary semaphore */
 void vExternalInterruptTask(void *p)
 {
 	while(1)
 	{
-		vTaskSuspend(NULL);
-		HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_14 |GPIO_PIN_15);
-		printf("External Interrupt\r\n");
+		if (ulTaskNotifyTake(pdTRUE, portMAX_DELAY))
+		{
+			HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_14 |GPIO_PIN_15);
+			printf("External Interrupt\r\n");
+		}
 	}
 }
 /*-----------------------------------------------------------*/
@@ -176,6 +147,9 @@ void initGPIOs(void)
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
 	
+	/* Peripheral clock enable. */
+  __HAL_RCC_USART2_CLK_ENABLE();
+	
 	/*Configure GPIO pin PA0 */
   GPIO_InitStruct.Pin = GPIO_PIN_0;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
@@ -191,6 +165,32 @@ void initGPIOs(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+	
+	/* Configure UART pins */
+	/* UART TX and RX GPIO pin configuration. */
+  GPIO_InitStruct.Pin = GPIO_PIN_2 | GPIO_PIN_3;
+  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+  GPIO_InitStruct.Alternate = GPIO_AF7_USART2;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+	
+	/* Set priority grouping. */
+  HAL_NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
+  /* MemoryManagement_IRQn interrupt configuration. */
+  HAL_NVIC_SetPriority(MemoryManagement_IRQn, 0, 0);
+  /* BusFault_IRQn interrupt configuration. */
+  HAL_NVIC_SetPriority(BusFault_IRQn, 0, 0);
+  /* UsageFault_IRQn interrupt configuration. */
+  HAL_NVIC_SetPriority(UsageFault_IRQn, 0, 0);
+  /* SVCall_IRQn interrupt configuration. */
+  HAL_NVIC_SetPriority(SVCall_IRQn, 0, 0);
+  /* DebugMonitor_IRQn interrupt configuration. */
+  HAL_NVIC_SetPriority(DebugMonitor_IRQn, 0, 0);
+  /* PendSV_IRQn interrupt configuration. */
+  HAL_NVIC_SetPriority(PendSV_IRQn, 0, 0);
+  /* SysTick_IRQn interrupt configuration. */
+  HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
 	
 	/* EXTI config */
 	HAL_NVIC_SetPriority(EXTI0_IRQn, 170, 0);
