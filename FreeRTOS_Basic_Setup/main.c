@@ -13,6 +13,13 @@
 #define MAX_BYTE 512
 
 #define SEND_DATA_SIZE 50
+/** \brief Configure number of bytes in the host->target data packet. */
+#define BOOT_COM_RS232_RX_MAX_DATA       (64)
+
+/** \brief Timeout time for the reception of a CTO packet. The timer is started upon
+ *         reception of the first packet byte.
+ */
+#define RS232_CTO_RX_PACKET_TIMEOUT_MS (100u)
 
 /* The task functions prototype*/
 void vTaskLedBlinking(void *pvParameters);
@@ -97,12 +104,70 @@ int main( void )
 /* UART communication */
 void vTaskReceiveDataByUart2( void *pvParameters )
 {
+	static unsigned char xcpCtoReqPacket[BOOT_COM_RS232_RX_MAX_DATA+1];
+  static unsigned char xcpCtoRxLength;
+  static unsigned char xcpCtoRxInProgress = 0;
+  static unsigned long xcpCtoRxStartTime = 0;
 	/* As per most tasks, this task is implemented in an infinite loop. */
 	while(1)
 	{
 		if (ulTaskNotifyTake(pdTRUE, portMAX_DELAY))
 		{
 			HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_13);
+			for(int i = 0; i < BOOT_COM_RS232_RX_MAX_DATA+1; i++) xcpCtoReqPacket[i] = uart2_receivingBuffer[i];
+			/* start of cto packet received? */
+			if (xcpCtoRxInProgress == 0)
+			{
+				/* store the message length when received */
+				if (xcpCtoReqPacket[0] == 1)
+				{
+					/* check that the length has a valid value. it should not be 0 */
+					if ( (xcpCtoReqPacket[0] > 0) &&
+							(xcpCtoReqPacket[0] <= BOOT_COM_RS232_RX_MAX_DATA) )
+					{
+						/* store the start time */
+						xcpCtoRxStartTime = TimerGet();
+						/* indicate that a cto packet is being received */
+						xcpCtoRxInProgress = 1;
+						/* reset packet data count */
+						xcpCtoRxLength = 0;
+					}
+				}
+			}
+			else
+			{
+				/* store the next packet byte */
+				if (xcpCtoReqPacket[xcpCtoRxLength+1] == 1)
+				{
+					/* increment the packet data count */
+					xcpCtoRxLength++;
+		
+					/* check to see if the entire packet was received */
+					if (xcpCtoRxLength == xcpCtoReqPacket[0])
+					{
+						/* done with cto packet reception */
+						xcpCtoRxInProgress = 0;
+		
+						/* check if this was an XCP CONNECT command */
+						if ((xcpCtoReqPacket[1] == 0xff) && (xcpCtoRxLength == 2))
+						{
+							/* connection request received so start the bootloader */
+							BootActivate();
+						}
+					}
+				}
+				else
+				{
+					/* check packet reception timeout */
+					if (TimerGet() > (xcpCtoRxStartTime + RS232_CTO_RX_PACKET_TIMEOUT_MS))
+					{
+						/* cancel cto packet reception due to timeout. note that this automatically
+						* discards the already received packet bytes, allowing the host to retry.
+						*/
+						xcpCtoRxInProgress = 0;
+					}
+				}
+			}
 		}
 	}
 }

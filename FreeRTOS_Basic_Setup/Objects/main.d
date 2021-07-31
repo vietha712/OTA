@@ -40,6 +40,4 @@
 .\objects\main.o: .\FreeRTOSv10.2.1\FreeRTOS\Source\include\mpu_wrappers.h
 .\objects\main.o: .\FreeRTOSv10.2.1\FreeRTOS\Source\include\task.h
 .\objects\main.o: .\FreeRTOSv10.2.1\FreeRTOS\Source\include\list.h
-.\objects\main.o: .\FreeRTOSv10.2.1\FreeRTOS\Source\include\semphr.h
-.\objects\main.o: .\FreeRTOSv10.2.1\FreeRTOS\Source\include\queue.h
 .\objects\main.o: D:\00_MasterMST\00_Modules\EmbeddedSystem\ota\boot\boot.h

@@ -454,11 +454,6 @@
               <FilePath>D:\00_MasterMST\00_Modules\EmbeddedSystem\ota\boot\boot.h</FilePath>
             </File>
             <File>
-              <FileName>header.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>D:\00_MasterMST\00_Modules\EmbeddedSystem\ota\boot\header.h</FilePath>
-            </File>
-            <File>
               <FileName>blt_conf.h</FileName>
               <FileType>5</FileType>
               <FilePath>D:\00_MasterMST\00_Modules\EmbeddedSystem\ota\boot\blt_conf.h</FilePath>
