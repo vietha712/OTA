@@ -4,7 +4,7 @@ F (.\FreeRTOSv10.2.1\FreeRTOS\Source\croutine.c)(0x5CD60F39)(--c99 --gnu -c --cp
 I (.\FreeRTOSv10.2.1\FreeRTOS\Source\include\FreeRTOS.h)(0x5CD60F39)
 I (C:\Keil_v5\ARM\ARMCC\include\stddef.h)(0x5E8E4AD2)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5E8E4AD2)
-I (.\FreeRTOSv10.2.1\FreeRTOS\Source\portable\RVDS\ARM_CM4F\FreeRTOSConfig.h)(0x60FCCD92)
+I (.\FreeRTOSv10.2.1\FreeRTOS\Source\portable\RVDS\ARM_CM4F\FreeRTOSConfig.h)(0x61054325)
 I (.\FreeRTOSv10.2.1\FreeRTOS\Source\include\projdefs.h)(0x5CD60F39)
 I (.\FreeRTOSv10.2.1\FreeRTOS\Source\include\portable.h)(0x5CD60F39)
 I (.\FreeRTOSv10.2.1\FreeRTOS\Source\include\deprecated_definitions.h)(0x5CD60F39)
@@ -18,7 +18,7 @@ I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5E8E4AD2)
 I (.\FreeRTOSv10.2.1\FreeRTOS\Source\include\FreeRTOS.h)(0x5CD60F39)
 I (C:\Keil_v5\ARM\ARMCC\include\stddef.h)(0x5E8E4AD2)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5E8E4AD2)
-I (.\FreeRTOSv10.2.1\FreeRTOS\Source\portable\RVDS\ARM_CM4F\FreeRTOSConfig.h)(0x60FCCD92)
+I (.\FreeRTOSv10.2.1\FreeRTOS\Source\portable\RVDS\ARM_CM4F\FreeRTOSConfig.h)(0x61054325)
 I (.\FreeRTOSv10.2.1\FreeRTOS\Source\include\projdefs.h)(0x5CD60F39)
 I (.\FreeRTOSv10.2.1\FreeRTOS\Source\include\portable.h)(0x5CD60F39)
 I (.\FreeRTOSv10.2.1\FreeRTOS\Source\include\deprecated_definitions.h)(0x5CD60F39)
@@ -33,7 +33,7 @@ I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5E8E4AD2)
 I (.\FreeRTOSv10.2.1\FreeRTOS\Source\include\FreeRTOS.h)(0x5CD60F39)
 I (C:\Keil_v5\ARM\ARMCC\include\stddef.h)(0x5E8E4AD2)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5E8E4AD2)
-I (.\FreeRTOSv10.2.1\FreeRTOS\Source\portable\RVDS\ARM_CM4F\FreeRTOSConfig.h)(0x60FCCD92)
+I (.\FreeRTOSv10.2.1\FreeRTOS\Source\portable\RVDS\ARM_CM4F\FreeRTOSConfig.h)(0x61054325)
 I (.\FreeRTOSv10.2.1\FreeRTOS\Source\include\projdefs.h)(0x5CD60F39)
 I (.\FreeRTOSv10.2.1\FreeRTOS\Source\include\portable.h)(0x5CD60F39)
 I (.\FreeRTOSv10.2.1\FreeRTOS\Source\include\deprecated_definitions.h)(0x5CD60F39)
@@ -46,7 +46,7 @@ I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x5E8E4AD2)
 I (.\FreeRTOSv10.2.1\FreeRTOS\Source\include\FreeRTOS.h)(0x5CD60F39)
 I (C:\Keil_v5\ARM\ARMCC\include\stddef.h)(0x5E8E4AD2)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5E8E4AD2)
-I (.\FreeRTOSv10.2.1\FreeRTOS\Source\portable\RVDS\ARM_CM4F\FreeRTOSConfig.h)(0x60FCCD92)
+I (.\FreeRTOSv10.2.1\FreeRTOS\Source\portable\RVDS\ARM_CM4F\FreeRTOSConfig.h)(0x61054325)
 I (.\FreeRTOSv10.2.1\FreeRTOS\Source\include\projdefs.h)(0x5CD60F39)
 I (.\FreeRTOSv10.2.1\FreeRTOS\Source\include\portable.h)(0x5CD60F39)
 I (.\FreeRTOSv10.2.1\FreeRTOS\Source\include\deprecated_definitions.h)(0x5CD60F39)
@@ -60,7 +60,7 @@ I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5E8E4AD2)
 I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x5E8E4AD2)
 I (.\FreeRTOSv10.2.1\FreeRTOS\Source\include\FreeRTOS.h)(0x5CD60F39)
 I (C:\Keil_v5\ARM\ARMCC\include\stddef.h)(0x5E8E4AD2)
-I (.\FreeRTOSv10.2.1\FreeRTOS\Source\portable\RVDS\ARM_CM4F\FreeRTOSConfig.h)(0x60FCCD92)
+I (.\FreeRTOSv10.2.1\FreeRTOS\Source\portable\RVDS\ARM_CM4F\FreeRTOSConfig.h)(0x61054325)
 I (.\FreeRTOSv10.2.1\FreeRTOS\Source\include\projdefs.h)(0x5CD60F39)
 I (.\FreeRTOSv10.2.1\FreeRTOS\Source\include\portable.h)(0x5CD60F39)
 I (.\FreeRTOSv10.2.1\FreeRTOS\Source\include\deprecated_definitions.h)(0x5CD60F39)
@@ -75,7 +75,7 @@ I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x5E8E4AD2)
 I (.\FreeRTOSv10.2.1\FreeRTOS\Source\include\FreeRTOS.h)(0x5CD60F39)
 I (C:\Keil_v5\ARM\ARMCC\include\stddef.h)(0x5E8E4AD2)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5E8E4AD2)
-I (.\FreeRTOSv10.2.1\FreeRTOS\Source\portable\RVDS\ARM_CM4F\FreeRTOSConfig.h)(0x60FCCD92)
+I (.\FreeRTOSv10.2.1\FreeRTOS\Source\portable\RVDS\ARM_CM4F\FreeRTOSConfig.h)(0x61054325)
 I (.\FreeRTOSv10.2.1\FreeRTOS\Source\include\projdefs.h)(0x5CD60F39)
 I (.\FreeRTOSv10.2.1\FreeRTOS\Source\include\portable.h)(0x5CD60F39)
 I (.\FreeRTOSv10.2.1\FreeRTOS\Source\include\deprecated_definitions.h)(0x5CD60F39)
@@ -90,7 +90,7 @@ I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5E8E4AD2)
 I (.\FreeRTOSv10.2.1\FreeRTOS\Source\include\FreeRTOS.h)(0x5CD60F39)
 I (C:\Keil_v5\ARM\ARMCC\include\stddef.h)(0x5E8E4AD2)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5E8E4AD2)
-I (.\FreeRTOSv10.2.1\FreeRTOS\Source\portable\RVDS\ARM_CM4F\FreeRTOSConfig.h)(0x60FCCD92)
+I (.\FreeRTOSv10.2.1\FreeRTOS\Source\portable\RVDS\ARM_CM4F\FreeRTOSConfig.h)(0x61054325)
 I (.\FreeRTOSv10.2.1\FreeRTOS\Source\include\projdefs.h)(0x5CD60F39)
 I (.\FreeRTOSv10.2.1\FreeRTOS\Source\include\portable.h)(0x5CD60F39)
 I (.\FreeRTOSv10.2.1\FreeRTOS\Source\include\deprecated_definitions.h)(0x5CD60F39)
@@ -105,7 +105,7 @@ I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x5E8E4AD2)
 I (.\FreeRTOSv10.2.1\FreeRTOS\Source\include\FreeRTOS.h)(0x5CD60F39)
 I (C:\Keil_v5\ARM\ARMCC\include\stddef.h)(0x5E8E4AD2)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5E8E4AD2)
-I (.\FreeRTOSv10.2.1\FreeRTOS\Source\portable\RVDS\ARM_CM4F\FreeRTOSConfig.h)(0x60FCCD92)
+I (.\FreeRTOSv10.2.1\FreeRTOS\Source\portable\RVDS\ARM_CM4F\FreeRTOSConfig.h)(0x61054325)
 I (.\FreeRTOSv10.2.1\FreeRTOS\Source\include\projdefs.h)(0x5CD60F39)
 I (.\FreeRTOSv10.2.1\FreeRTOS\Source\include\portable.h)(0x5CD60F39)
 I (.\FreeRTOSv10.2.1\FreeRTOS\Source\include\deprecated_definitions.h)(0x5CD60F39)
@@ -117,7 +117,7 @@ F (.\FreeRTOSv10.2.1\FreeRTOS\Source\portable\RVDS\ARM_CM4F\port.c)(0x5DB994B4)(
 I (.\FreeRTOSv10.2.1\FreeRTOS\Source\include\FreeRTOS.h)(0x5CD60F39)
 I (C:\Keil_v5\ARM\ARMCC\include\stddef.h)(0x5E8E4AD2)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5E8E4AD2)
-I (.\FreeRTOSv10.2.1\FreeRTOS\Source\portable\RVDS\ARM_CM4F\FreeRTOSConfig.h)(0x60FCCD92)
+I (.\FreeRTOSv10.2.1\FreeRTOS\Source\portable\RVDS\ARM_CM4F\FreeRTOSConfig.h)(0x61054325)
 I (.\FreeRTOSv10.2.1\FreeRTOS\Source\include\projdefs.h)(0x5CD60F39)
 I (.\FreeRTOSv10.2.1\FreeRTOS\Source\include\portable.h)(0x5CD60F39)
 I (.\FreeRTOSv10.2.1\FreeRTOS\Source\include\deprecated_definitions.h)(0x5CD60F39)
@@ -125,8 +125,8 @@ I (.\FreeRTOSv10.2.1\FreeRTOS\Source\portable\RVDS\ARM_CM4F\portmacro.h)(0x5CD60
 I (.\FreeRTOSv10.2.1\FreeRTOS\Source\include\mpu_wrappers.h)(0x5CD60F39)
 I (.\FreeRTOSv10.2.1\FreeRTOS\Source\include\task.h)(0x5CD60F39)
 I (.\FreeRTOSv10.2.1\FreeRTOS\Source\include\list.h)(0x5CD60F39)
-F (.\FreeRTOSv10.2.1\FreeRTOS\Source\portable\RVDS\ARM_CM4F\FreeRTOSConfig.h)(0x60FCCD92)()
-F (.\main.c)(0x60FCD596)(--c99 --gnu -c --cpu Cortex-M4.fp.sp -D__EVAL -g -O0 --apcs=interwork --split_sections -I .\FreeRTOSv10.2.1\FreeRTOS\Source\include -I .\FreeRTOSv10.2.1\FreeRTOS\Source\portable\RVDS\ARM_CM4F -I ..\FreeRTOS_Basic_Setup -I D:\00_MasterMST\00_Modules\EmbeddedSystem\ota\boot-I.\RTE\Device\STM32F407VGTx-I.\RTE\_Target_1-IC:\Users\hathe\AppData\Local\Arm\Packs\ARM\CMSIS\5.7.0\CMSIS\Core\Include-IC:\Users\hathe\AppData\Local\Arm\Packs\Keil\STM32F4xx_DFP\2.15.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Users\hathe\AppData\Local\Arm\Packs\Keil\STM32F4xx_DFP\2.15.0\Drivers\STM32F4xx_HAL_Driver\Inc-D__UVISION_VERSION="534" -D_RTE_ -DSTM32F407xx -D_RTE_-o .\objects\main.o --omf_browse .\objects\main.crf --depend .\objects\main.d)
+F (.\FreeRTOSv10.2.1\FreeRTOS\Source\portable\RVDS\ARM_CM4F\FreeRTOSConfig.h)(0x61054325)()
+F (.\main.c)(0x61055111)(--c99 --gnu -c --cpu Cortex-M4.fp.sp -D__EVAL -g -O0 --apcs=interwork --split_sections -I .\FreeRTOSv10.2.1\FreeRTOS\Source\include -I .\FreeRTOSv10.2.1\FreeRTOS\Source\portable\RVDS\ARM_CM4F -I ..\FreeRTOS_Basic_Setup -I D:\00_MasterMST\00_Modules\EmbeddedSystem\ota\boot-I.\RTE\Device\STM32F407VGTx-I.\RTE\_Target_1-IC:\Users\hathe\AppData\Local\Arm\Packs\ARM\CMSIS\5.7.0\CMSIS\Core\Include-IC:\Users\hathe\AppData\Local\Arm\Packs\Keil\STM32F4xx_DFP\2.15.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Users\hathe\AppData\Local\Arm\Packs\Keil\STM32F4xx_DFP\2.15.0\Drivers\STM32F4xx_HAL_Driver\Inc-D__UVISION_VERSION="534" -D_RTE_ -DSTM32F407xx -D_RTE_-o .\objects\main.o --omf_browse .\objects\main.crf --depend .\objects\main.d)
 I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x5E8E4AD2)
 I (C:\Users\hathe\AppData\Local\Arm\Packs\Keil\STM32F4xx_DFP\2.15.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include\stm32f4xx.h)(0x5F6ADFE6)
 I (C:\Users\hathe\AppData\Local\Arm\Packs\Keil\STM32F4xx_DFP\2.15.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include\stm32f407xx.h)(0x5F6ADFE6)
@@ -160,7 +160,7 @@ I (C:\Users\hathe\AppData\Local\Arm\Packs\Keil\STM32F4xx_DFP\2.15.0\Drivers\STM3
 I (C:\Users\hathe\AppData\Local\Arm\Packs\Keil\STM32F4xx_DFP\2.15.0\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_uart.h)(0x5F6AE086)
 I (C:\Users\hathe\AppData\Local\Arm\Packs\Keil\STM32F4xx_DFP\2.15.0\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_usart.h)(0x5F6AE086)
 I (.\FreeRTOSv10.2.1\FreeRTOS\Source\include\FreeRTOS.h)(0x5CD60F39)
-I (.\FreeRTOSv10.2.1\FreeRTOS\Source\portable\RVDS\ARM_CM4F\FreeRTOSConfig.h)(0x60FCCD92)
+I (.\FreeRTOSv10.2.1\FreeRTOS\Source\portable\RVDS\ARM_CM4F\FreeRTOSConfig.h)(0x61054325)
 I (.\FreeRTOSv10.2.1\FreeRTOS\Source\include\projdefs.h)(0x5CD60F39)
 I (.\FreeRTOSv10.2.1\FreeRTOS\Source\include\portable.h)(0x5CD60F39)
 I (.\FreeRTOSv10.2.1\FreeRTOS\Source\include\deprecated_definitions.h)(0x5CD60F39)
@@ -168,6 +168,8 @@ I (.\FreeRTOSv10.2.1\FreeRTOS\Source\portable\RVDS\ARM_CM4F\portmacro.h)(0x5CD60
 I (.\FreeRTOSv10.2.1\FreeRTOS\Source\include\mpu_wrappers.h)(0x5CD60F39)
 I (.\FreeRTOSv10.2.1\FreeRTOS\Source\include\task.h)(0x5CD60F39)
 I (.\FreeRTOSv10.2.1\FreeRTOS\Source\include\list.h)(0x5CD60F39)
+I (.\FreeRTOSv10.2.1\FreeRTOS\Source\include\semphr.h)(0x5CD60F39)
+I (.\FreeRTOSv10.2.1\FreeRTOS\Source\include\queue.h)(0x5CD60F39)
 I (D:\00_MasterMST\00_Modules\EmbeddedSystem\ota\boot\boot.h)(0x60FC2840)
 F (D:\00_MasterMST\00_Modules\EmbeddedSystem\ota\boot\boot.c)(0x60FC284A)(--c99 --gnu -c --cpu Cortex-M4.fp.sp -D__EVAL -g -O0 --apcs=interwork --split_sections -I .\FreeRTOSv10.2.1\FreeRTOS\Source\include -I .\FreeRTOSv10.2.1\FreeRTOS\Source\portable\RVDS\ARM_CM4F -I ..\FreeRTOS_Basic_Setup -I D:\00_MasterMST\00_Modules\EmbeddedSystem\ota\boot-I.\RTE\Device\STM32F407VGTx-I.\RTE\_Target_1-IC:\Users\hathe\AppData\Local\Arm\Packs\ARM\CMSIS\5.7.0\CMSIS\Core\Include-IC:\Users\hathe\AppData\Local\Arm\Packs\Keil\STM32F4xx_DFP\2.15.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-IC:\Users\hathe\AppData\Local\Arm\Packs\Keil\STM32F4xx_DFP\2.15.0\Drivers\STM32F4xx_HAL_Driver\Inc-D__UVISION_VERSION="534" -D_RTE_ -DSTM32F407xx -D_RTE_-o .\objects\boot.o --omf_browse .\objects\boot.crf --depend .\objects\boot.d)
 I (D:\00_MasterMST\00_Modules\EmbeddedSystem\ota\boot\header.h)(0x60FC263C)

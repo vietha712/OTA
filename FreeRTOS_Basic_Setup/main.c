@@ -10,15 +10,24 @@
 /* Used as a loop counter to create a very crude delay. */
 #define mainDELAY_LOOP_COUNT		( 0xfffff )
 
+#define MAX_BYTE 512
+
+#define SEND_DATA_SIZE 50
+
 /* The task functions prototype*/
 void vTaskLedBlinking(void *pvParameters);
-void vTaskCommunication(void *pvParameters);
+//void vTaskCommunication(void *pvParameters);
+void vTaskSendDataFromUart3(void *pvParameters);
+void vTaskFinishSendDataFromUart3(void *pvParameters);
+void vTaskReceiveDataByUart2(void *pvParameters);
 void vApplicationIdleHook(void);
 void vTimerInterruptTask(void *p);
 void vExternalInterruptTask(void *p);
 
 void initGPIOs(void);
 void MX_TIM2_Init(void);
+void MX_USART2_UART_Init(void);
+void MX_USART3_UART_Init(void);
 void Error_Handler(void);
 void SystemClock_Config(void);
 
@@ -30,6 +39,17 @@ UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart3;
 TaskHandle_t timerHandle = NULL;
 TaskHandle_t buttonHandle = NULL;
+TaskHandle_t uart3Handle = NULL;
+TaskHandle_t endUart3Handle = NULL;
+TaskHandle_t uart2Handle = NULL;
+
+uint8_t uart2_receivingBuffer[MAX_BYTE];
+uint8_t uart3_receivingBuffer;
+uint8_t pData[SEND_DATA_SIZE] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,
+																 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,
+																 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,
+																 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,
+																 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0xFF};
 
 /*-----------------------------------------------------------*/
 
@@ -37,24 +57,32 @@ int main( void )
 {
 	//SystemInit();
 	//SystemCoreClockUpdate();
-	
+	//xQueueCreate();
 	/* essential Board initializations */
 	HAL_Init();
 	SystemClock_Config();
 	initGPIOs();
 	MX_TIM2_Init();
-	BootComInit();
+	MX_USART2_UART_Init();
+	MX_USART3_UART_Init();
+	
+	huart2.RxXferSize = SEND_DATA_SIZE;
 
 	printf("FreeRTOS running on STM32F407 Discovery Board\n");
 	
 	/* Create the other task in exactly the same way. */
-	xTaskCreate( vTaskCommunication, "Communication task", 100, NULL, 1, NULL );
+	xTaskCreate( vTaskSendDataFromUart3, "vTaskSendDataFromUart3 task", 100, NULL, 3, &uart3Handle );
+	xTaskCreate( vTaskFinishSendDataFromUart3, "vTaskSendDataFromUart3 task", 100, NULL, 2, &endUart3Handle );
+
+	xTaskCreate( vTaskReceiveDataByUart2, "vTaskReceiveDataByUart2 task", 100, NULL, 3, &uart2Handle );
 	
 	xTaskCreate( vExternalInterruptTask, "button triggered task", 100, NULL, 2, &buttonHandle );
 	
 	xTaskCreate( vTimerInterruptTask, "timerHandle task for LED blinking", 100, NULL, 2, &timerHandle );
 	
+	/* Start Interrupt */
 	HAL_TIM_Base_Start_IT_modified(&htim2);
+	HAL_UART_Receive_IT(&huart2,&uart2_receivingBuffer[0],SEND_DATA_SIZE); //last argument indicates 1 byte transmitted trigger interrupt
 	
 	/* Start the scheduler so our tasks start executing. */
 	vTaskStartScheduler();
@@ -67,15 +95,44 @@ int main( void )
 /*-----------------------------------------------------------*/
 
 /* UART communication */
-void vTaskCommunication( void *pvParameters )
+void vTaskReceiveDataByUart2( void *pvParameters )
+{
+	/* As per most tasks, this task is implemented in an infinite loop. */
+	while(1)
+	{
+		if (ulTaskNotifyTake(pdTRUE, portMAX_DELAY))
+		{
+			HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_13);
+		}
+	}
+}
+/*-----------------------------------------------------------*/
+
+/* UART communication */
+void vTaskSendDataFromUart3( void *pvParameters )
 {
 	/* As per most tasks, this task is implemented in an infinite loop. */
 	for( ;; )
 	{
-		/* Print out the name of this task. */
-    BootComCheckActivationRequest();
-		printf("Check request from esp32\n");
+		HAL_UART_Transmit_IT(&huart3, &pData[0], SEND_DATA_SIZE);
+		vTaskDelay(3000/portTICK_RATE_MS); //3s
+	}
+}
 
+/* UART communication */
+void vTaskFinishSendDataFromUart3( void *pvParameters )
+{
+	/* As per most tasks, this task is implemented in an infinite loop. */
+	while(1)
+	{
+		if (ulTaskNotifyTake(pdTRUE, portMAX_DELAY))
+		{
+			for(int i = 0; i < SEND_DATA_SIZE;i++) pData[i]++;
+			if(pData[9] == 0xff)
+			{
+				for(int i = 0; i < SEND_DATA_SIZE;i++) pData[i]=0;
+			}
+		}
 	}
 }
 /*-----------------------------------------------------------*/
@@ -100,13 +157,46 @@ void TIM2_IRQHandler(void)
 }
 /*-----------------------------------------------------------*/
 
+/* Interrupt routine for the uart2 */
+void USART2_IRQHandler(void)
+{
+	static uint8_t numByte = 0;
+	BaseType_t checkIfYieldRequried;
+
+	if(huart2.Instance->SR & 0x20)
+	{
+		if (numByte < huart2.RxXferSize)
+		{
+			uart2_receivingBuffer[numByte] = huart2.Instance->DR;
+			numByte++;
+		}
+		else
+		{
+			numByte = 0;
+		}
+	}
+
+	vTaskNotifyGiveFromISR(uart2Handle, &checkIfYieldRequried);
+}
+/*-----------------------------------------------------------*/
+
+/* Interrupt routine for the timer */
+void USART3_IRQHandler(void)
+{
+	HAL_UART_IRQHandler(&huart3);
+	BaseType_t checkIfYieldRequried;
+	
+	vTaskNotifyGiveFromISR(endUart3Handle, &checkIfYieldRequried);
+}
+/*-----------------------------------------------------------*/
+
 void vTimerInterruptTask(void *p)
 {
 	while(1)
 	{
 		if (ulTaskNotifyTake(pdTRUE, portMAX_DELAY))
 		{
-			HAL_GPIO_TogglePin(GPIOD, (GPIO_PIN_12|GPIO_PIN_13));
+			HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_12);
 			printf("Timer Interrupt\r\n");
 		}
 	}
@@ -326,6 +416,72 @@ static void MX_TIM2_Init(void)
 }
 
 /**
+  * @brief USART2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART2_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART2_Init 0 */
+
+  /* USER CODE END USART2_Init 0 */
+
+  /* USER CODE BEGIN USART2_Init 1 */
+
+  /* USER CODE END USART2_Init 1 */
+  huart2.Instance = USART2;
+  huart2.Init.BaudRate = 57600;
+  huart2.Init.WordLength = UART_WORDLENGTH_8B;
+  huart2.Init.StopBits = UART_STOPBITS_1;
+  huart2.Init.Parity = UART_PARITY_NONE;
+  huart2.Init.Mode = UART_MODE_TX_RX;
+  huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART2_Init 2 */
+
+  /* USER CODE END USART2_Init 2 */
+
+}
+
+/**
+  * @brief USART3 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART3_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART3_Init 0 */
+
+  /* USER CODE END USART3_Init 0 */
+
+  /* USER CODE BEGIN USART3_Init 1 */
+
+  /* USER CODE END USART3_Init 1 */
+  huart3.Instance = USART3;
+  huart3.Init.BaudRate = 57600;
+  huart3.Init.WordLength = UART_WORDLENGTH_8B;
+  huart3.Init.StopBits = UART_STOPBITS_1;
+  huart3.Init.Parity = UART_PARITY_NONE;
+  huart3.Init.Mode = UART_MODE_TX_RX;
+  huart3.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart3.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART3_Init 2 */
+
+  /* USER CODE END USART3_Init 2 */
+
+}
+
+/**
 * @brief TIM_Base MSP Initialization
 * This function configures the hardware resources used in this example
 * @param htim_base: TIM_Base handle pointer
@@ -385,6 +541,72 @@ HAL_StatusTypeDef HAL_TIM_Base_Start_IT_modified(TIM_HandleTypeDef *htim)
 
   /* Return function status */
   return HAL_OK;
+}
+
+/**
+* @brief UART MSP Initialization
+* This function configures the hardware resources used in this example
+* @param huart: UART handle pointer
+* @retval None
+*/
+void HAL_UART_MspInit(UART_HandleTypeDef* huart)
+{
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+  if(huart->Instance==USART2)
+  {
+  /* USER CODE BEGIN USART2_MspInit 0 */
+
+  /* USER CODE END USART2_MspInit 0 */
+    /* Peripheral clock enable */
+    __HAL_RCC_USART2_CLK_ENABLE();
+
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    /**USART2 GPIO Configuration
+    PA2     ------> USART2_TX
+    PA3     ------> USART2_RX
+    */
+    GPIO_InitStruct.Pin = GPIO_PIN_2|GPIO_PIN_3;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+    GPIO_InitStruct.Alternate = GPIO_AF7_USART2;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+    /* USART2 interrupt Init */
+    HAL_NVIC_SetPriority(USART2_IRQn, 171, 0);
+    HAL_NVIC_EnableIRQ(USART2_IRQn);
+  /* USER CODE BEGIN USART2_MspInit 1 */
+
+  /* USER CODE END USART2_MspInit 1 */
+  }
+  else if(huart->Instance==USART3)
+  {
+  /* USER CODE BEGIN USART3_MspInit 0 */
+
+  /* USER CODE END USART3_MspInit 0 */
+    /* Peripheral clock enable */
+    __HAL_RCC_USART3_CLK_ENABLE();
+
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+    /**USART3 GPIO Configuration
+    PB10     ------> USART3_TX
+    PB11     ------> USART3_RX
+    */
+    GPIO_InitStruct.Pin = GPIO_PIN_10|GPIO_PIN_11;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+    GPIO_InitStruct.Alternate = GPIO_AF7_USART3;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+    /* USART3 interrupt Init */
+    HAL_NVIC_SetPriority(USART3_IRQn, 170, 0);
+    HAL_NVIC_EnableIRQ(USART3_IRQn);
+  /* USER CODE BEGIN USART3_MspInit 1 */
+
+  /* USER CODE END USART3_MspInit 1 */
+  }
+
 }
 
 
