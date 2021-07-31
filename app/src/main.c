@@ -37,6 +37,8 @@ void MX_USART2_UART_Init(void);
 void MX_USART3_UART_Init(void);
 void Error_Handler(void);
 void SystemClock_Config(void);
+void VectorBase_Config(void);
+void Init(void);
 
 HAL_StatusTypeDef HAL_TIM_Base_Start_IT_modified(TIM_HandleTypeDef *htim);
 
@@ -52,13 +54,14 @@ TaskHandle_t uart2Handle = NULL;
 
 uint8_t uart2_receivingBuffer[MAX_BYTE];
 uint8_t uart3_receivingBuffer;
-uint8_t pData[SEND_DATA_SIZE] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,
-																 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,
-																 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,
-																 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,
-																 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0xFF};
+uint8_t pData[SEND_DATA_SIZE] = {0x02, 0xff, 0x00, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
+																 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
+																 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
+																 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
+																 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01};
 
 /*-----------------------------------------------------------*/
+
 
 int main( void )
 {
@@ -66,14 +69,13 @@ int main( void )
 	//SystemCoreClockUpdate();
 	//xQueueCreate();
 	/* essential Board initializations */
+	Init();
 	HAL_Init();
 	SystemClock_Config();
 	initGPIOs();
 	MX_TIM2_Init();
 	MX_USART2_UART_Init();
 	MX_USART3_UART_Init();
-	
-	huart2.RxXferSize = SEND_DATA_SIZE;
 
 	printf("FreeRTOS running on STM32F407 Discovery Board\n");
 	
@@ -89,7 +91,7 @@ int main( void )
 	
 	/* Start Interrupt */
 	HAL_TIM_Base_Start_IT_modified(&htim2);
-	HAL_UART_Receive_IT(&huart2,&uart2_receivingBuffer[0],SEND_DATA_SIZE); //last argument indicates 1 byte transmitted trigger interrupt
+	HAL_UART_Receive_IT(&huart2,&uart2_receivingBuffer[0], 3); //last argument indicates 1 byte transmitted trigger interrupt
 	
 	/* Start the scheduler so our tasks start executing. */
 	vTaskStartScheduler();
@@ -100,6 +102,25 @@ int main( void )
 	for( ;; );
 }
 /*-----------------------------------------------------------*/
+static void Init(void)
+{
+  /* Configure the vector table base address. */
+  VectorBase_Config();
+
+} /*** end of Init ***/
+/*-----------------------------------------------------------*/
+
+static void VectorBase_Config(void)
+{
+  /* The constant array with vectors of the vector table is declared externally in the
+   * c-startup code.
+   */
+  extern const unsigned long __Vectors[];
+
+  /* Remap the vector table to where the vector table is located for this program. */
+  SCB->VTOR = (unsigned long)&__Vectors[0];
+} /*** end of VectorBase_Config***/
+/*-----------------------------------------------------------*/
 
 /* UART communication */
 void vTaskReceiveDataByUart2( void *pvParameters )
@@ -108,18 +129,24 @@ void vTaskReceiveDataByUart2( void *pvParameters )
   static unsigned char xcpCtoRxLength;
   static unsigned char xcpCtoRxInProgress = 0;
   static unsigned long xcpCtoRxStartTime = 0;
+	//static uint32_t z = 0;
 	/* As per most tasks, this task is implemented in an infinite loop. */
 	while(1)
 	{
 		if (ulTaskNotifyTake(pdTRUE, portMAX_DELAY))
 		{
 			HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_13);
+			//HAL_UART_Receive_IT(&huart2,&uart2_receivingBuffer[z], 1);
+			//z++;
+			//if(z == SEND_DATA_SIZE) z = 0;
+			
 			for(int i = 0; i < BOOT_COM_RS232_RX_MAX_DATA+1; i++) xcpCtoReqPacket[i] = uart2_receivingBuffer[i];
+
 			/* start of cto packet received? */
 			if (xcpCtoRxInProgress == 0)
 			{
 				/* store the message length when received */
-				if (xcpCtoReqPacket[0] == 1)
+				if (xcpCtoReqPacket[0] != 0x00)
 				{
 					/* check that the length has a valid value. it should not be 0 */
 					if ( (xcpCtoReqPacket[0] > 0) &&
@@ -137,7 +164,7 @@ void vTaskReceiveDataByUart2( void *pvParameters )
 			else
 			{
 				/* store the next packet byte */
-				if (xcpCtoReqPacket[xcpCtoRxLength+1] == 1)
+				if (1)
 				{
 					/* increment the packet data count */
 					xcpCtoRxLength++;
@@ -177,10 +204,13 @@ void vTaskReceiveDataByUart2( void *pvParameters )
 void vTaskSendDataFromUart3( void *pvParameters )
 {
 	/* As per most tasks, this task is implemented in an infinite loop. */
+	uint32_t i = 0;
 	for( ;; )
 	{
-		HAL_UART_Transmit_IT(&huart3, &pData[0], SEND_DATA_SIZE);
-		vTaskDelay(3000/portTICK_RATE_MS); //3s
+		HAL_UART_Transmit_IT(&huart3, &pData[i], 1);
+		vTaskDelay(2000/portTICK_RATE_MS); //3s
+		i++;
+		if(i == SEND_DATA_SIZE) i = 0;
 	}
 }
 
@@ -192,11 +222,11 @@ void vTaskFinishSendDataFromUart3( void *pvParameters )
 	{
 		if (ulTaskNotifyTake(pdTRUE, portMAX_DELAY))
 		{
-			for(int i = 0; i < SEND_DATA_SIZE;i++) pData[i]++;
-			if(pData[9] == 0xff)
-			{
-				for(int i = 0; i < SEND_DATA_SIZE;i++) pData[i]=0;
-			}
+			//for(int i = 0; i < SEND_DATA_SIZE;i++) pData[i]++;
+			//if(pData[9] == 0xff)
+			//{
+			//	for(int i = 0; i < SEND_DATA_SIZE;i++) pData[i]=0;
+			//}
 		}
 	}
 }
