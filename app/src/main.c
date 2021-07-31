@@ -4,7 +4,6 @@
 #include "stm32f4xx_hal.h"
 #include "FreeRTOS.h"
 #include "task.h"
-#include "semphr.h"
 #include "boot.h"
 
 
@@ -14,6 +13,13 @@
 #define MAX_BYTE 512
 
 #define SEND_DATA_SIZE 50
+/** \brief Configure number of bytes in the host->target data packet. */
+#define BOOT_COM_RS232_RX_MAX_DATA       (64)
+
+/** \brief Timeout time for the reception of a CTO packet. The timer is started upon
+ *         reception of the first packet byte.
+ */
+#define RS232_CTO_RX_PACKET_TIMEOUT_MS (100u)
 
 /* The task functions prototype*/
 void vTaskLedBlinking(void *pvParameters);
@@ -68,7 +74,6 @@ int main( void )
 	MX_USART3_UART_Init();
 	
 	huart2.RxXferSize = SEND_DATA_SIZE;
-	//BootComInit();
 
 	printf("FreeRTOS running on STM32F407 Discovery Board\n");
 	
@@ -99,14 +104,70 @@ int main( void )
 /* UART communication */
 void vTaskReceiveDataByUart2( void *pvParameters )
 {
+	static unsigned char xcpCtoReqPacket[BOOT_COM_RS232_RX_MAX_DATA+1];
+  static unsigned char xcpCtoRxLength;
+  static unsigned char xcpCtoRxInProgress = 0;
+  static unsigned long xcpCtoRxStartTime = 0;
 	/* As per most tasks, this task is implemented in an infinite loop. */
 	while(1)
 	{
 		if (ulTaskNotifyTake(pdTRUE, portMAX_DELAY))
 		{
 			HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_13);
-			//HAL_UART_Receive_IT(&huart2,&uart2_receivingBuffer,1);
-			//HAL_UART_Receive(&huart2,&uart2_receivingBuffer,1,0xfffffff);
+			for(int i = 0; i < BOOT_COM_RS232_RX_MAX_DATA+1; i++) xcpCtoReqPacket[i] = uart2_receivingBuffer[i];
+			/* start of cto packet received? */
+			if (xcpCtoRxInProgress == 0)
+			{
+				/* store the message length when received */
+				if (xcpCtoReqPacket[0] == 1)
+				{
+					/* check that the length has a valid value. it should not be 0 */
+					if ( (xcpCtoReqPacket[0] > 0) &&
+							(xcpCtoReqPacket[0] <= BOOT_COM_RS232_RX_MAX_DATA) )
+					{
+						/* store the start time */
+						xcpCtoRxStartTime = TimerGet();
+						/* indicate that a cto packet is being received */
+						xcpCtoRxInProgress = 1;
+						/* reset packet data count */
+						xcpCtoRxLength = 0;
+					}
+				}
+			}
+			else
+			{
+				/* store the next packet byte */
+				if (xcpCtoReqPacket[xcpCtoRxLength+1] == 1)
+				{
+					/* increment the packet data count */
+					xcpCtoRxLength++;
+		
+					/* check to see if the entire packet was received */
+					if (xcpCtoRxLength == xcpCtoReqPacket[0])
+					{
+						/* done with cto packet reception */
+						xcpCtoRxInProgress = 0;
+		
+						/* check if this was an XCP CONNECT command */
+						if ((xcpCtoReqPacket[1] == 0xff) && (xcpCtoRxLength == 2))
+						{
+							/* connection request received so start the bootloader */
+							BootActivate();
+						}
+					}
+				}
+				else
+				{
+					/* check packet reception timeout */
+					if (TimerGet() > (xcpCtoRxStartTime + RS232_CTO_RX_PACKET_TIMEOUT_MS))
+					{
+						/* cancel cto packet reception due to timeout. note that this automatically
+						* discards the already received packet bytes, allowing the host to retry.
+						*/
+						xcpCtoRxInProgress = 0;
+					}
+				}
+			}
 		}
 	}
 }
@@ -180,7 +241,6 @@ void USART2_IRQHandler(void)
 		}
 	}
 
-	
 	vTaskNotifyGiveFromISR(uart2Handle, &checkIfYieldRequried);
 }
 /*-----------------------------------------------------------*/
@@ -436,7 +496,7 @@ static void MX_USART2_UART_Init(void)
 
   /* USER CODE END USART2_Init 1 */
   huart2.Instance = USART2;
-  huart2.Init.BaudRate = 250000;
+  huart2.Init.BaudRate = 57600;
   huart2.Init.WordLength = UART_WORDLENGTH_8B;
   huart2.Init.StopBits = UART_STOPBITS_1;
   huart2.Init.Parity = UART_PARITY_NONE;
@@ -469,7 +529,7 @@ static void MX_USART3_UART_Init(void)
 
   /* USER CODE END USART3_Init 1 */
   huart3.Instance = USART3;
-  huart3.Init.BaudRate = 250000;
+  huart3.Init.BaudRate = 57600;
   huart3.Init.WordLength = UART_WORDLENGTH_8B;
   huart3.Init.StopBits = UART_STOPBITS_1;
   huart3.Init.Parity = UART_PARITY_NONE;
