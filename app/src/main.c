@@ -564,7 +564,7 @@ static void MX_USART3_UART_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN USART3_Init 2 */
-	huart2.Instance->BRR = (0x2d9);
+	huart3.Instance->BRR = (0x2d9);
   /* USER CODE END USART3_Init 2 */
 
 }
