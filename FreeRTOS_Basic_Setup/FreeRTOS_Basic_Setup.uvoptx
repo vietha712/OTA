@@ -152,18 +152,18 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>119</LineNumber>
+          <LineNumber>163</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>0</Address>
+          <Address>134234990</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>0</BreakIfRCount>
+          <BreakIfRCount>1</BreakIfRCount>
           <Filename>.\main.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression></Expression>
+          <Expression>\\FreeRTOS_Basic_Setup\main.c\163</Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>
@@ -207,6 +207,11 @@
           <WinNumber>1</WinNumber>
           <ItemText>uart3_receivingBuffer</ItemText>
         </Ww>
+        <Ww>
+          <count>8</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>huart2</ItemText>
+        </Ww>
       </WatchWindow1>
       <WatchWindow2>
         <Ww>
@@ -233,6 +238,16 @@
           <count>4</count>
           <WinNumber>2</WinNumber>
           <ItemText>xcpCtoReqPacket</ItemText>
+        </Ww>
+        <Ww>
+          <count>5</count>
+          <WinNumber>2</WinNumber>
+          <ItemText>xcpCtoRxLength</ItemText>
+        </Ww>
+        <Ww>
+          <count>6</count>
+          <WinNumber>2</WinNumber>
+          <ItemText>numByte</ItemText>
         </Ww>
       </WatchWindow2>
       <MemoryWindow1>
