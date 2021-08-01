@@ -16,9 +16,13 @@
 /** \brief Configure number of bytes in the host->target data packet. */
 #define BOOT_COM_RS232_RX_MAX_DATA       (64)
 
+/** \brief Timeout time for the reception of a CTO packet. The timer is started upon
+ *         reception of the first packet byte.
+ */
+#define RS232_CTO_RX_PACKET_TIMEOUT_MS (100u)
+
 /* The task functions prototype*/
 void vTaskLedBlinking(void *pvParameters);
-//void vTaskCommunication(void *pvParameters);
 void vTaskSendDataFromUart3(void *pvParameters);
 void vTaskFinishSendDataFromUart3(void *pvParameters);
 void vTaskReceiveDataByUart2(void *pvParameters);
@@ -47,8 +51,9 @@ TaskHandle_t uart3Handle = NULL;
 TaskHandle_t endUart3Handle = NULL;
 TaskHandle_t uart2Handle = NULL;
 
-uint8_t uart2_receivingBuffer;
-uint8_t pData[SEND_DATA_SIZE] = {0x00, 0x02, 0xff, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01, 0x01,
+uint8_t uart2_receivingBuffer[MAX_BYTE];
+uint8_t uart3_receivingBuffer;
+uint8_t pData[SEND_DATA_SIZE] = {0x02, 0xff, 0x00, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
 																 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
 																 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
 																 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
@@ -58,13 +63,15 @@ uint8_t pData[SEND_DATA_SIZE] = {0x00, 0x02, 0xff, 0x00, 0x00, 0x00, 0x01, 0x01,
 
 
 int main( void )
-{
+{ 
+	
+	//SystemInit();
+	//SystemCoreClockUpdate();
 	/* essential Board initializations */
 	Init();
 	HAL_Init();
+	
 	SystemClock_Config();
-	//SystemInit();
-	//SystemCoreClockUpdate();
 	initGPIOs();
 	MX_TIM2_Init();
 	MX_USART2_UART_Init();
@@ -84,7 +91,7 @@ int main( void )
 	
 	/* Start Interrupt */
 	HAL_TIM_Base_Start_IT_modified(&htim2);
-	HAL_UART_Receive_IT(&huart2,&uart2_receivingBuffer, 1); //last argument indicates 1 byte transmitted trigger interrupt
+	HAL_UART_Receive_IT(&huart2,&uart2_receivingBuffer[0], 3);
 	
 	/* Start the scheduler so our tasks start executing. */
 	vTaskStartScheduler();
@@ -121,7 +128,7 @@ void vTaskReceiveDataByUart2( void *pvParameters )
 	static unsigned char xcpCtoReqPacket[BOOT_COM_RS232_RX_MAX_DATA+1];
   static unsigned char xcpCtoRxLength;
   static unsigned char xcpCtoRxInProgress = 0;
-	static uint32_t numByteCopyFromUart2Buffer = 0;
+  static unsigned long xcpCtoRxStartTime = 0;
 	/* As per most tasks, this task is implemented in an infinite loop. */
 	while(1)
 	{
@@ -129,38 +136,58 @@ void vTaskReceiveDataByUart2( void *pvParameters )
 		{
 			HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_13);
 			
-			if (uart2_receivingBuffer > 0) xcpCtoReqPacket[numByteCopyFromUart2Buffer++] = uart2_receivingBuffer;
-			if(numByteCopyFromUart2Buffer > BOOT_COM_RS232_RX_MAX_DATA) numByteCopyFromUart2Buffer = 0;
+			for(int i = 0; i < BOOT_COM_RS232_RX_MAX_DATA+1; i++) xcpCtoReqPacket[i] = uart2_receivingBuffer[i];
 
 			/* start of cto packet received? */
 			if (xcpCtoRxInProgress == 0)
 			{
-				/* check that the length has a valid value. it should not be 0 */
-				if ((xcpCtoReqPacket[0] <= BOOT_COM_RS232_RX_MAX_DATA) )
+				/* store the message length when received */
+				if (xcpCtoReqPacket[0] != 0x00)
 				{
-					/* indicate that a cto packet is being received */
-					xcpCtoRxInProgress = 1;
-					/* reset packet data count */
-					xcpCtoRxLength = 0;
+					/* check that the length has a valid value. it should not be 0 */
+					if ( (xcpCtoReqPacket[0] > 0) &&
+							(xcpCtoReqPacket[0] <= BOOT_COM_RS232_RX_MAX_DATA) )
+					{
+						/* store the start time */
+						xcpCtoRxStartTime = TimerGet();
+						/* indicate that a cto packet is being received */
+						xcpCtoRxInProgress = 1;
+						/* reset packet data count */
+						xcpCtoRxLength = 0;
+					}
 				}
 			}
 			else
 			{
 				/* store the next packet byte */
-				/* increment the packet data count */
-				xcpCtoRxLength++;
-		
-				/* check to see if the entire packet was received */
-				if (xcpCtoRxLength == xcpCtoReqPacket[0])
+				if (1)
 				{
-					/* done with cto packet reception */
-					xcpCtoRxInProgress = 0;
+					/* increment the packet data count */
+					xcpCtoRxLength++;
 		
-					/* check if this was an XCP CONNECT command */
-					if ((xcpCtoReqPacket[1] == 0xff) && (xcpCtoRxLength == 2))
+					/* check to see if the entire packet was received */
+					if (xcpCtoRxLength == xcpCtoReqPacket[0])
 					{
-						/* connection request received so start the bootloader */
-						BootActivate();
+						/* done with cto packet reception */
+						xcpCtoRxInProgress = 0;
+		
+						/* check if this was an XCP CONNECT command */
+						if ((xcpCtoReqPacket[1] == 0xff) && (xcpCtoRxLength == 2))
+						{
+							/* connection request received so start the bootloader */
+							BootActivate();
+						}
+					}
+				}
+				else
+				{
+					/* check packet reception timeout */
+					if (TimerGet() > (xcpCtoRxStartTime + RS232_CTO_RX_PACKET_TIMEOUT_MS))
+					{
+						/* cancel cto packet reception due to timeout. note that this automatically
+						* discards the already received packet bytes, allowing the host to retry.
+						*/
+						xcpCtoRxInProgress = 0;
 					}
 				}
 			}
@@ -224,11 +251,20 @@ void TIM2_IRQHandler(void)
 /* Interrupt routine for the uart2 */
 void USART2_IRQHandler(void)
 {
+	static uint8_t numByte = 0;
 	BaseType_t checkIfYieldRequried;
 
 	if(huart2.Instance->SR & 0x20)
 	{
-			uart2_receivingBuffer = huart2.Instance->DR;
+		if (numByte < huart2.RxXferSize)
+		{
+			uart2_receivingBuffer[numByte] = huart2.Instance->DR;
+			numByte++;
+		}
+		else
+		{
+			numByte = 0;
+		}
 	}
 
 	vTaskNotifyGiveFromISR(uart2Handle, &checkIfYieldRequried);
@@ -387,7 +423,7 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLM = 8;
   RCC_OscInitStruct.PLL.PLLN = 336;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
-  RCC_OscInitStruct.PLL.PLLQ = 7;
+  RCC_OscInitStruct.PLL.PLLQ = 4;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
@@ -399,7 +435,7 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
-  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV4;
 
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK)
   {
@@ -490,15 +526,13 @@ static void MX_USART2_UART_Init(void)
   huart2.Init.Mode = UART_MODE_TX_RX;
   huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
   huart2.Init.OverSampling = UART_OVERSAMPLING_16;
-
   if (HAL_UART_Init(&huart2) != HAL_OK)
   {
     Error_Handler();
   }
   /* USER CODE BEGIN USART2_Init 2 */
-	huart2.Instance->BRR = (0x2d9); //Workaround for the communication with flashing device
+	huart2.Instance->BRR = (0x2d9); //workaround
   /* USER CODE END USART2_Init 2 */
-
 
 }
 
@@ -530,7 +564,7 @@ static void MX_USART3_UART_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN USART3_Init 2 */
-	huart3.Instance->BRR = (0x2d9); //Workaround for the communication with flashing device
+	huart3.Instance->BRR = (0x2d9);
   /* USER CODE END USART3_Init 2 */
 
 }
@@ -603,11 +637,10 @@ HAL_StatusTypeDef HAL_TIM_Base_Start_IT_modified(TIM_HandleTypeDef *htim)
 * @param huart: UART handle pointer
 * @retval None
 */
-void HAL_UART_MspInit(UART_HandleTypeDef* huart)
+void HAL_MspInit(void)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
-  if(huart->Instance==USART2)
-  {
+  
   /* USER CODE BEGIN USART2_MspInit 0 */
 
   /* USER CODE END USART2_MspInit 0 */
@@ -632,9 +665,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart)
   /* USER CODE BEGIN USART2_MspInit 1 */
 
   /* USER CODE END USART2_MspInit 1 */
-  }
-  else if(huart->Instance==USART3)
-  {
+  
   /* USER CODE BEGIN USART3_MspInit 0 */
 
   /* USER CODE END USART3_MspInit 0 */
@@ -659,8 +690,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart)
   /* USER CODE BEGIN USART3_MspInit 1 */
 
   /* USER CODE END USART3_MspInit 1 */
-  }
+  
 
 }
-
 
