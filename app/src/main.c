@@ -23,7 +23,6 @@
 
 /* The task functions prototype*/
 void vTaskLedBlinking(void *pvParameters);
-//void vTaskCommunication(void *pvParameters);
 void vTaskSendDataFromUart3(void *pvParameters);
 void vTaskFinishSendDataFromUart3(void *pvParameters);
 void vTaskReceiveDataByUart2(void *pvParameters);
@@ -68,7 +67,6 @@ int main( void )
 	
 	//SystemInit();
 	//SystemCoreClockUpdate();
-	//xQueueCreate();
 	/* essential Board initializations */
 	Init();
 	HAL_Init();
@@ -82,18 +80,18 @@ int main( void )
 	printf("FreeRTOS running on STM32F407 Discovery Board\n");
 	
 	/* Create the other task in exactly the same way. */
-	xTaskCreate( vTaskSendDataFromUart3, "vTaskSendDataFromUart3 task", 100, NULL, 3, &uart3Handle );
-	xTaskCreate( vTaskFinishSendDataFromUart3, "vTaskSendDataFromUart3 task", 100, NULL, 2, &endUart3Handle );
+	xTaskCreate( vTaskSendDataFromUart3, "vTaskSendDataFromUart3 task", 100, NULL, 2, &uart3Handle );
+	xTaskCreate( vTaskFinishSendDataFromUart3, "vTaskSendDataFromUart3 task", 100, NULL, 1, &endUart3Handle );
 
-	xTaskCreate( vTaskReceiveDataByUart2, "vTaskReceiveDataByUart2 task", 100, NULL, 3, &uart2Handle );
+	xTaskCreate( vTaskReceiveDataByUart2, "vTaskReceiveDataByUart2 task", 100, NULL, 2, &uart2Handle );
 	
-	xTaskCreate( vExternalInterruptTask, "button triggered task", 100, NULL, 2, &buttonHandle );
+	xTaskCreate( vExternalInterruptTask, "button triggered task", 100, NULL, 1, &buttonHandle );
 	
-	xTaskCreate( vTimerInterruptTask, "timerHandle task for LED blinking", 100, NULL, 2, &timerHandle );
+	xTaskCreate( vTimerInterruptTask, "timerHandle task for LED blinking", 100, NULL, 1, &timerHandle );
 	
 	/* Start Interrupt */
 	HAL_TIM_Base_Start_IT_modified(&htim2);
-	HAL_UART_Receive_IT(&huart2,&uart2_receivingBuffer[0], 3); //last argument indicates 1 byte transmitted trigger interrupt
+	HAL_UART_Receive_IT(&huart2,&uart2_receivingBuffer[0], 3);
 	
 	/* Start the scheduler so our tasks start executing. */
 	vTaskStartScheduler();
@@ -131,16 +129,12 @@ void vTaskReceiveDataByUart2( void *pvParameters )
   static unsigned char xcpCtoRxLength;
   static unsigned char xcpCtoRxInProgress = 0;
   static unsigned long xcpCtoRxStartTime = 0;
-	//static uint32_t z = 0;
 	/* As per most tasks, this task is implemented in an infinite loop. */
 	while(1)
 	{
 		if (ulTaskNotifyTake(pdTRUE, portMAX_DELAY))
 		{
 			HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_13);
-			//HAL_UART_Receive_IT(&huart2,&uart2_receivingBuffer[z], 1);
-			//z++;
-			//if(z == SEND_DATA_SIZE) z = 0;
 			
 			for(int i = 0; i < BOOT_COM_RS232_RX_MAX_DATA+1; i++) xcpCtoReqPacket[i] = uart2_receivingBuffer[i];
 
@@ -294,7 +288,6 @@ void vTimerInterruptTask(void *p)
 		if (ulTaskNotifyTake(pdTRUE, portMAX_DELAY))
 		{
 			HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_12);
-			printf("Timer Interrupt\r\n");
 		}
 	}
 }
@@ -307,7 +300,6 @@ void vExternalInterruptTask(void *p)
 		if (ulTaskNotifyTake(pdTRUE, portMAX_DELAY))
 		{
 			HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_14 |GPIO_PIN_15);
-			printf("External Interrupt\r\n");
 		}
 	}
 }
@@ -319,7 +311,6 @@ void vApplicationIdleHook(void)
 	for( ;; )
 	{
 		/* Print out the name of this task. */
-    printf("idling\n");
 	}
 }
 /*-----------------------------------------------------------*/
@@ -540,7 +531,7 @@ static void MX_USART2_UART_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN USART2_Init 2 */
-huart2.Instance->BRR = (0x2d9);
+	huart2.Instance->BRR = (0x2d9); //workaround
   /* USER CODE END USART2_Init 2 */
 
 }
@@ -573,7 +564,7 @@ static void MX_USART3_UART_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN USART3_Init 2 */
-
+	huart2.Instance->BRR = (0x2d9);
   /* USER CODE END USART3_Init 2 */
 
 }
